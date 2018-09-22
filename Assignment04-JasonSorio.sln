@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2017
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assignment04-JasonSorio", "Assignment04-JasonSorio.csproj", "{06514957-B720-951C-5D39-AE3A645F1B82}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assignment04-JasonSorio.Editor.Plugins", "Assignment04-JasonSorio.Editor.Plugins.csproj", "{541A4179-D0B2-51FA-5E3F-B718145168AB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{06514957-B720-951C-5D39-AE3A645F1B82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06514957-B720-951C-5D39-AE3A645F1B82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06514957-B720-951C-5D39-AE3A645F1B82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06514957-B720-951C-5D39-AE3A645F1B82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{541A4179-D0B2-51FA-5E3F-B718145168AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{541A4179-D0B2-51FA-5E3F-B718145168AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{541A4179-D0B2-51FA-5E3F-B718145168AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{541A4179-D0B2-51FA-5E3F-B718145168AB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
