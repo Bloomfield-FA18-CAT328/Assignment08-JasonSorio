@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TS;
 
-public class MoveEnemy : MonoBehaviour
+public class MoveEnemyV2 : MonoBehaviour
 {
     public enum State { Patrol, Chase, Stop }
     public State ActiveState = State.Patrol;
@@ -17,32 +17,37 @@ public class MoveEnemy : MonoBehaviour
 
     TagSensor sensor;
 
-    public float speed = 20;
-    public float range = 6;
-    public float angle;
-
-    public float estimate;
+    public float speed;
+    public float maxRange;
+    public float minRange;
+    public float FOV;
+    public float lookAtAngle;
+    public bool Detected;
 
     void Awake()
     {
-        sensor = new TagSensor(gameObject,0,range,angle);
+        sensor = new TagSensor(gameObject, minRange, maxRange, FOV, lookAtAngle);
     }
 
     void Start()
     {
-        Debug.DrawRay(transform.position, (Quaternion.AngleAxis(-angle / 2, transform.up) * transform.forward) * range, Color.green);
+       
     }
-    
-	void Update ()
+
+    void Update()
     {
         float step = speed * Time.deltaTime;
         float dist = Vector3.Distance(Player.transform.position, transform.position);
-        estimate = sensor.DotToAngle(transform.forward, Vector3.Normalize(Player.transform.position - transform.position)) * 2;
+        sensor.MaxRange = maxRange;
+        sensor.MinRange = minRange;
+        sensor.FOV = FOV;
+        sensor.OffsetY = lookAtAngle;
+        Detected = sensor.OnDetect("player");
 
-        switch (ActiveState) //
+        switch (ActiveState)
         {
             case State.Patrol:
-                if(ActiveWaypoint == Waypoint.Left)
+                if (ActiveWaypoint == Waypoint.Left)
                 {
                     transform.LookAt(A.transform.position);
                     transform.position = Vector3.MoveTowards(transform.position, A.transform.position, step);
@@ -52,7 +57,7 @@ public class MoveEnemy : MonoBehaviour
                     transform.LookAt(B.transform.position);
                     transform.position = Vector3.MoveTowards(transform.position, B.transform.position, step);
                 }
-                
+
                 if (transform.position == A.transform.position)
                 {
                     ActiveWaypoint = Waypoint.Right;
@@ -62,12 +67,15 @@ public class MoveEnemy : MonoBehaviour
                     ActiveWaypoint = Waypoint.Left;
                 }
                 break;
+
             case State.Chase:
                 transform.LookAt(Player.transform.position);
                 transform.position = Vector3.MoveTowards(transform.position, Player.transform.position, step);
                 break;
+
             case State.Stop:
                 break;
+
             default:
                 break;
         }
@@ -78,30 +86,19 @@ public class MoveEnemy : MonoBehaviour
         }
         else
         {
-            /* the way thats actually working
-            if (dist <= range & angle > estimate)
+            if (Detected)
             {
                 ActiveState = State.Chase;
             }
-            else if (dist > range)
-            {
-                ActiveState = State.Patrol;
-            }*/
-
-            //the way I want to do it
-
-            if (sensor.OnDetect("player"))
-            {
-                ActiveState = State.Chase;
-            }
-            else if (dist > range)
+            else
             {
                 ActiveState = State.Patrol;
             }
         }
 
         sensor.GridLines();
-        
+
+        //if 
         if (transform.position == Player.transform.position)
         {
             Player.transform.position = new Vector3(0, 0, -145);

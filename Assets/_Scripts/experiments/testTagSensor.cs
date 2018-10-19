@@ -8,9 +8,9 @@ public class testTagSensor : MonoBehaviour
     public enum mode { Sweep, Line, SweepLine, Grid }
     public mode Mode;
 
-    tagSensor front;
-    tagSensor back;
-    tagSensor custom;
+    TagSensor front;
+    TagSensor back;
+    TagSensor custom;
 
     public float min;
     public float max;
@@ -21,7 +21,7 @@ public class testTagSensor : MonoBehaviour
 
     void Update ()
     {
-        custom = new tagSensor(gameObject, min, max, fov, direction);
+        custom = new TagSensor(gameObject, min, max, fov, direction);
 
         switch (Mode)
         {

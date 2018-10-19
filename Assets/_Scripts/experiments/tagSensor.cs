@@ -6,9 +6,9 @@ namespace TS
 {
     public enum DrawMode { Show, ShowAll, HideAll }
 
-    public class tagSensor
+    public class TagSensor
     {
-        //public vars for inspector
+        //public vars
         public DrawMode DrawMode { get; set; }
         public DrawMode ShowLines = DrawMode.Show;
         public float Precision;
@@ -21,13 +21,14 @@ namespace TS
         private Quaternion offset3D;
         private bool hide;
         private GameObject receivingGameObject;
+        private bool disabled;
 
         //constructors
-        public tagSensor()
+        public TagSensor()
         {
         }
 
-        public tagSensor(GameObject receiver)
+        public TagSensor(GameObject receiver)
         {
             this.receivingGameObject = receiver;
             this.fov = 0;
@@ -38,7 +39,7 @@ namespace TS
             this.hide = false;
         }
 
-        public tagSensor(GameObject receiver, float minRange, float maxRange, float FieldOfView)
+        public TagSensor(GameObject receiver, float minRange, float maxRange, float FieldOfView)
         {
             this.receivingGameObject = receiver;
             this.minRange = minRange;
@@ -50,7 +51,7 @@ namespace TS
             this.hide = false;
         }
 
-        public tagSensor(GameObject receiver, float minRange, float maxRange, float FieldOfView, float OffsetY)
+        public TagSensor(GameObject receiver, float minRange, float maxRange, float FieldOfView, float OffsetY)
         {
             this.receivingGameObject = receiver;
             this.minRange = minRange;
@@ -61,7 +62,7 @@ namespace TS
             this.hide = false;
         }
 
-        public tagSensor(GameObject receiver, float minRange, float maxRange, float FieldOfView, Quaternion Offset3D)
+        public TagSensor(GameObject receiver, float minRange, float maxRange, float FieldOfView, Quaternion Offset3D)
         {
             this.receivingGameObject = receiver;
             this.minRange = minRange;
@@ -79,6 +80,7 @@ namespace TS
         OffsetY
         Offset3D
         Hide
+        Active
         */
 
         public GameObject ReceivingGameObject
@@ -123,27 +125,43 @@ namespace TS
             set { hide = value; }
         }
 
+        public bool Disabled
+        {
+            get { return disabled; }
+            set { disabled = value; }
+        }
+
+
+
+        //
         // detection methods
+        //todo: figure out why OffsetY isn't offsetting OnDetect
         public bool OnDetect(string t) // when true, repeatedly goes from true to false for some reason
         {
-            GameObject[] tag = GameObject.FindGameObjectsWithTag(t);
-            Vector3 dir = receivingGameObject.transform.forward;
+            if(!Disabled)
+            { 
+                GameObject[] tag = GameObject.FindGameObjectsWithTag(t);
+                Vector3 dir = receivingGameObject.transform.forward;
 
-            foreach (GameObject items in tag)
-            {
-                float dot = dotToAngle(offset3D * receivingGameObject.transform.forward, Vector3.Normalize(items.transform.position - receivingGameObject.transform.position));
-                float distance = Vector3.Distance(receivingGameObject.transform.position, items.transform.position);
+                foreach (GameObject items in tag)
+                {
+                    //float angle = DotToAngle(offset3D * receivingGameObject.transform.forward, Vector3.Normalize(items.transform.position - receivingGameObject.transform.position));
+                    float distance = Vector3.Distance(receivingGameObject.transform.position, items.transform.position);
+                    float dot = Vector3.Dot(Quaternion.AngleAxis(offsetY, receivingGameObject.transform.up) * receivingGameObject.transform.forward,/**/ Vector3.Normalize(items.transform.position - receivingGameObject.transform.position));
+                    float compare = Vector3.Dot(Quaternion.AngleAxis(offsetY, receivingGameObject.transform.up) * receivingGameObject.transform.forward,/*why fov?*/ Quaternion.AngleAxis(offsetY + fov / 2, receivingGameObject.transform.up) * receivingGameObject.transform.forward);
 
-                if (dot <= fov / 2 & distance <= maxRange & distance >= minRange)
-                {
-                    return true;
-                }
-                else
-                {
-                    /*
-                    Debug.Log(dot + "," + fov + "," + distance);
-                    Debug.Break(); */
-                    return false;
+
+                    if (dot >= compare & distance <= maxRange & distance >= minRange)
+                    //if (angle <= fov / 2 & distance <= maxRange & distance >= minRange)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        //Debug.Log(dot + "," + fov + "," + distance);
+                        //Debug.Break();
+                        return false;
+                    }
                 }
             }
 
@@ -151,6 +169,11 @@ namespace TS
         }
 
         //todo: write method OnDetectLOS(string) using raycast
+
+
+
+
+
 
         // visualization methods
 
@@ -201,41 +224,42 @@ namespace TS
             {
                 float donutRadius = maxRange - minRange;
 
-                float dot = dotToAngle(Quaternion.AngleAxis(offsetY, receivingGameObject.transform.up) * receivingGameObject.transform.forward, Quaternion.AngleAxis(RotationIndex, receivingGameObject.transform.up) * receivingGameObject.transform.forward);
+                float angleA = DotToAngle(Quaternion.AngleAxis(offsetY, receivingGameObject.transform.up) * receivingGameObject.transform.forward, Quaternion.AngleAxis(RotationIndex, receivingGameObject.transform.up) * receivingGameObject.transform.forward);
                 Quaternion direction1 = Quaternion.AngleAxis(RotationIndex, receivingGameObject.transform.up);
 
                 //too repetive
                 //todo: make an array of these values instead
-                float dot2 = dotToAngle(Quaternion.AngleAxis(offsetY, receivingGameObject.transform.up) * receivingGameObject.transform.forward, Quaternion.AngleAxis(RotationIndex + 180, receivingGameObject.transform.up) * receivingGameObject.transform.forward);
+                float angleB = DotToAngle(Quaternion.AngleAxis(offsetY, receivingGameObject.transform.up) * receivingGameObject.transform.forward, Quaternion.AngleAxis(RotationIndex + 180, receivingGameObject.transform.up) * receivingGameObject.transform.forward);
                 Quaternion direction2 = Quaternion.AngleAxis(RotationIndex + 180, receivingGameObject.transform.up);
 
-                if (dot <= fov / 2)
+                if (angleA <= fov / 2)
                 {
                     Debug.DrawRay(receivingGameObject.transform.position + Vector3.Normalize(direction1 * receivingGameObject.transform.forward) * minRange, direction1 * receivingGameObject.transform.forward * donutRadius, Color.blue);
                 }
 
-                if (dot2 <= fov / 2)
+                if (angleB <= fov / 2)
                 {
                     Debug.DrawRay(receivingGameObject.transform.position + Vector3.Normalize(direction2 * receivingGameObject.transform.forward) * minRange, direction2 * receivingGameObject.transform.forward * donutRadius, Color.blue);
                 }
             }
         }
 
-        void Update()
+        /*
+        void foo()
         {
             if (ShowLines == DrawMode.ShowAll)
             {
                 DrawLines();
             }
-        }
+        }*/
 
-        static float dotToAngle(Vector3 A, Vector3 B)
+        public float DotToAngle(Vector3 A, Vector3 B)
         {
             float angle = Mathf.Acos(Vector3.Dot(A, B) / (Vector3.Magnitude(A) * Vector3.Magnitude(B))) * Mathf.Rad2Deg;
             return angle;
         }
 
-        static float estimateDotToAngle(Vector3 A, Vector3 B) //faster, generates denser grids, but also less accurate
+        public float CrudeDotToAngle(Vector3 A, Vector3 B) //very fast, but also very inaccurate
         {
             float angle = 90 * (-Vector3.Dot(A, B) + 1);
             return angle;
